@@ -89,7 +89,7 @@ func CopyFile(dstName, srcName string) (written int64, err error) {
     if err != nil {
         return
     }
-    defer src.Close()
+    defer src.Close() // now you don't have to worry about forgetting!
 
     dst, err := os.Create(dstName)
     if err != nil {
@@ -105,6 +105,8 @@ Second, panic is a built in function which acts similarly to an excetion in C++ 
 Go also has a built-in error interface which is often returned alongside other values in a method. If the value within the interface is not nil something has gone wrong. In order to compile code the error's must be checked and handled appropriately.
 
 Go is also statically typed since the types of all variables can be inferred and does not restrict aliasing as you can have as many references to the same object as you want like in C.
+
+<cite>[Defer, Panic, and Recover](https://blog.golang.org/defer-panic-and-recover)</cite>
 
 ### Slices
 The array and slice types are as almost as easy-to-use as Python's list, but feel as close to the memory as C's pointers. The same data structure easly works as a stream, and can eithr be backed by a static array or dynamically resized. 
