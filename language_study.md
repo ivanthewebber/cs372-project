@@ -22,7 +22,7 @@ Because Go requires a file-system naming scheme a class that implements an inter
 Unlike Java and C-family languages, Go doesn't require a type declaration every time a variable is declared. If the type can be implied from the return of a function, then it can be ommited. However, the `:=` operator must be used for declaration whereas the `=` is solely for assignment.
 
 ### Basic Types
-Go's `int`, `uint`, `float`, and `bool` types are simmilar to those in the C-family, but Go also has specific-size varients like ECMAScript's TypedArrays (e.g. `int32`, `float64`). These are useful when precision is necessary or bitwise-wizardry is desired. Go also has built-in `complex` and `string` types simmilar to those in C++.
+Go's `int`, `uint`, `float`, and `bool` types are similar to those in the C-family, but Go also has specific-size variants like ECMAScript's TypedArrays (e.g. `int32`, `float64`). These are useful when precision is necessary or bitwise-wizardry is desired. Go also has built-in `complex` and `string` types simmilar to those in C++.
 
 Go also has c-style pointers, a struct, and a type definition that is very simmilar to C's typedef.
 
@@ -54,6 +54,12 @@ for i := 0; i < 10; i += 1 {
 	fmt.Printf("%d", i)
 }
 
+for i := 0; i < 10 {
+	// Go's for loops can act like the while loops of other languages since all the clauses are optional...
+	fmt.Printf("%d", i)
+	i++
+}
+
 for index, value := range myArray {
 	// do something...
 }
@@ -70,11 +76,37 @@ Built-in concurrency, an awesome compiler, and other features make Go a fast (i.
 <cite>[Five Things that Make Go Fast](https://dave.cheney.net/2014/06/07/five-things-that-make-go-fast)</cite>
 
 ### Extensibility
+In Go you are able to declare new data types using the type keword which is comparable to typedef in C99, but Go currently does not allow you to extend a keyword or operator to work on user-defined types (unless, or course, the keyword or operation is defined for the underlying alias). For instance, Go has the keyword `range` for iterating over the elements in maps, arrays, slices, and strings. Currently iteration via `range` cannot be implemented on user-defined types.
 
 ### Regularity / Uniformity
 The designers of Go did a lot of work to clean up the C-family syntax to ensure the language would be more uniform. Additionaly, Go's rules about package and repo organization guarante that the url will always match the file tree making it easy to prevent conflicts and trace the source of a package. Also, Go enforces minimal documentation standards and other things which at first are hard; but overall are for the good.
 
 ### Security/Reliability
+Go handles exceptions in three steps: defer, panic, recover. First, the defer keyword defers the execution of a function until the end of a function. This is simmilar to a finally block, and is useful for keeping file opening and closing together.
+```Go
+func CopyFile(dstName, srcName string) (written int64, err error) {
+    src, err := os.Open(srcName)
+    if err != nil {
+        return
+    }
+    defer src.Close() // now you don't have to worry about forgetting!
+
+    dst, err := os.Create(dstName)
+    if err != nil {
+        return
+    }
+    defer dst.Close()
+
+    return io.Copy(dst, src)
+}
+```
+Second, panic is a built in function which acts similarly to an excetion in C++ or Java. Once invoked the current function's defered statements are executed normally and the function returns. This continues up the call tree until the program crashes or the built-in function recover is used within a defer block. Recover is able to catch the value given to panic and resume normal execution.
+
+Go also has a built-in error interface which is often returned alongside other values in a method. If the value within the interface is not nil something has gone wrong. In order to compile code the error's must be checked and handled appropriately.
+
+Go is also statically typed since the types of all variables can be inferred and does not restrict aliasing as you can have as many references to the same object as you want like in C.
+
+<cite>[Defer, Panic, and Recover](https://blog.golang.org/defer-panic-and-recover)</cite>
 
 ### Slices
 The array and slice types are as almost as easy-to-use as Python's list, but feel as close to the memory as C's pointers. The same data structure easly works as a stream, and can eithr be backed by a static array or dynamically resized. 
@@ -109,7 +141,7 @@ func main() {
 ```
  - <cite>[GO's Hello World widget](https://golang.org/)</cite>
 
-In general Go attempts to be as minimal as possible to avoid unneeded characters, semicolons, and types (indeed, the type is only needed if it can't be discerend by other means). While minimalism sometimes has negative consequences (e.g. less readable, requireing knowledge of sub-standard acronyms and abbreviations), overall it removes a lot of fluff from the language. 
+In general Go attempts to be as minimal as possible to avoid unneeded characters, semicolons, and types (indeed, the type is only needed if it can't be discerned by other means). While minimalism sometimes has negative consequences (e.g. less readable, requireing knowledge of sub-standard acronyms and abbreviations), overall it removes a lot of fluff from the language. 
 
 To truly see the verbose vs. minimalist comparison between Java and Go check out each language's hello-world tutorials.
 
