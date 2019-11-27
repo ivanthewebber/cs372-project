@@ -3,8 +3,8 @@ Uses the rot13 package to encrypt and decrypt files.
 
 This program attempts to conform to Go's style guidelines.
 
-Language Project: https://github.com/ivanthewebber/csc372-program4
-Language Study: https://github.com/ivanthewebber/csc372-program4/blob/master/language_study.md
+Language Project: https://github.com/ivanthewebber/cs372-project
+Language Study: https://github.com/ivanthewebber/cs372-project/language_study.md
 */
 package main
 
@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ivanthewebber/csc372-program3/rot13"
+	"github.com/ivanthewebber/cs372-project/rot13"
 )
 
 // splits filename and rotation & posts updates for the user
@@ -63,49 +63,34 @@ func rotateFiles(inputFilename string, outputFilename string, rot int) {
 	}
 	defer fileOut.Close()
 
-	rotReader := rot13.NewReader(fileIn, rot)
-
-	var buff []byte
-	buff = make([]byte, 32)
-
-	// pass content over
-	for {
-
-		n, err := rotReader.Read(buff)
-		fileOut.Write(buff[:n])
-
-		if err == io.EOF {
-			break
-		}
-	}
+	// copy rotated content to new file
+	io.Copy(fileOut, rot13.NewReader(fileIn, rot))
 }
 
 func main() {
 	var inFilename, outFilename string
 	var rot int
 
-	switch {
-	case len(os.Args) == 1: // ask for input
+	switch numArgs := len(os.Args); {
+	case numArgs == 1:
+		// ask for input
 		fmt.Print("File? ")
-		_, err := fmt.Scanf("%s", &inFilename)
-
-		if err != nil {
-			panic(err)
-		}
+		fmt.Scanf("%s", &inFilename)
 
 		if strings.Contains(inFilename, ".rot") {
 			outFilename, rot = parseDecrypt(inFilename)
 		} else {
 			fmt.Print("Rot? ")
-			_, err = fmt.Scanf("%d", &rot)
+			fmt.Scanf("%d", &rot)
+
 			outFilename = outFilename + ".rot" + strconv.Itoa(rot)
 			fmt.Printf("Ecrypting %v with rot=%v\t", outFilename, rot)
 		}
-	case len(os.Args) == 2 && strings.Contains(os.Args[1], ".rot"):
+	case numArgs == 2 && strings.Contains(os.Args[1], ".rot"):
 		inFilename = os.Args[1]
 		outFilename, rot = parseDecrypt(inFilename)
 
-	case len(os.Args) == 3:
+	case numArgs == 3:
 		inFilename = os.Args[1]
 		outFilename, rot = parseEncrypt(inFilename, os.Args[2])
 	default:

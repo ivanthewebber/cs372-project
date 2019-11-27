@@ -1,3 +1,3 @@
-module github.com/ivanthewebber/csc372-program3/rot13
+module github.com/ivanthewebber/cs372-project/rot13
 
 go 1.13
