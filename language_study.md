@@ -33,14 +33,17 @@ Go also has a built-in string type (it's very simmilar to the slice). For repres
 
 Finally, Go's functions are first-class objects meaning they can be parameters, return values, and functions can be on the righthand-side of assignments.
 
-In the future Go will have custom-type generics.
+In the future Go will have custom-type generics. For now only built-in types can handle generics.
 
  - <cite>[Type System Overview](https://go101.org/article/type-system-overview.html)</cite>
+ 
+### Interfaces
+Go's interface types allow one to specify a group of methods to act on some type. Any type with a corresponding group of methods automatically satisfies the interface. For example [see this IntHeap](https://play.golang.org/p/rJvJCqw73ql) implemented by satisfying the heap package's interface.
 
 ## Control Structures
 Go has a single loop, the for loop, with all the clauses optional. Go has C-style `if`, and a switch which is only a shorthand for an if-else-if...-else block. Go also has a defer keyword that is simmilar to finally in Java. Go also has labeled break statements and goto.
 
-```Go
+```Golang
 if length := len(data); length == 0 {
 	// do something...
 } else if (length > 100) {
