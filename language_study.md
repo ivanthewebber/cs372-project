@@ -72,19 +72,21 @@ for index, value := range myArray {
 Go is statically scoped; has static constants; has a garbage collector; uses static, stack-dynamic, and heap-dynamic allocation; and supports enclosures.
 
 ## Desirable Language Characteristics
-### Efficiency -> Go Is FAST
-Built-in concurrency, an awesome compiler, and other features make Go a fast (i.e. high-performance) language. Unlike other languages Go's goroutines allow developers to easily write platform-independent parallel code.
+### Efficiency & Performance
+Built-in concurrency, an awesome compiler, and other features make Go a fast (i.e. high-performance) language. Unlike other languages goroutines allow developers to easily write platform-independent concurrent and even parallel code.
 
 <cite>[Achieving Concurrency in Go](https://medium.com/rungo/achieving-concurrency-in-go-3f84cbf870ca)</cite>
 <cite>[Five Things that Make Go Fast](https://dave.cheney.net/2014/06/07/five-things-that-make-go-fast)</cite>
 
+Also unlike other languages, Go does not provide object-oriented template classes for each of the common Abstract Data Types. Instead Go programmers use the slice which is a simple dynamic array. The programmer's useage of a slice can make it a stack or a queue. The lack of a wrapper can be offsetting at first, but quickly becomes liberating and improves performance. 
+
 ### Extensibility
 In Go you are able to declare new data types using the type keword which is comparable to typedef in C99, but Go currently does not allow you to extend a keyword or operator to work on user-defined types (unless, or course, the keyword or operation is defined for the underlying alias). For instance, Go has the keyword `range` for iterating over the elements in maps, arrays, slices, and strings. Currently iteration via `range` cannot be implemented on user-defined types.
 
-### Regularity / Uniformity
+### Regularity & Uniformity
 The designers of Go did a lot of work to clean up the C-family syntax to ensure the language would be more uniform. Additionaly, Go's rules about package and repo organization guarante that the url will always match the file tree making it easy to prevent conflicts and trace the source of a package. Also, Go enforces minimal documentation standards and other things which at first are hard; but overall are for the good.
 
-### Security/Reliability
+### Security & Reliability
 Go handles exceptions in three steps: defer, panic, recover. First, the defer keyword defers the execution of a function until the end of a function. This is simmilar to a finally block, and is useful for keeping file opening and closing together.
 ```Go
 func CopyFile(dstName, srcName string) (written int64, err error) {
