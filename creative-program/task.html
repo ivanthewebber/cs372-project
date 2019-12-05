@@ -1,0 +1,5 @@
+<div class="{{if .IsComplete}}finished{{end}} task">
+    <h3>{{.Title}}</h3>
+    <p>{{ if .IsComplete }} Was due {{else}} Due on {{end}}{{.DueDate}}</p>
+    <p>[<a href="/edit/{{.Title}}">edit</a>]</p>
+</div>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>To-Do list</title>
+  </head>
+  <body>
+    <p>
+      To-Do list for {{ .User }} 
+    </p>
+    <table>
+      	<tr>
+          <td>Task</td>
+          <td>Done</td>
+    	</tr>
+      	{{ with .List }}
+			{{ range . }}
+      			<tr>
+              		<td><a href="/edit/{{.User}}/{{.Title}}">{{ .Name }}</a></td>
+              		<td>{{ if .Done }}Yes{{ else }}No{{ end }}</td>
+      			</tr>
+			{{ end }} 
+      	{{ end }}
+    </table>
+  </body>
+</html>
+{{/* Assumes:
+    type entry struct {
+        Name string
+        Done bool
+      }
+      
+      type ToDo struct {
+        User string
+        List []entry
+      }
+    */}}
