@@ -134,7 +134,7 @@ func Example() *gorm.DB {
 // ./delete/firstname lastname/list
 // ./mark complete/firstname lastname/list/task
 
-var validPath = regexp.MustCompile("^/(welcome|login)|((view|add|delete)/(\\w{,32}) (\\w{,32}))|((add|delete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,256}))|((mark complete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,256})/([A-Za-z0-9]{,256}))$")
+var validPath = regexp.MustCompile("^/(welcome|login)|((view|add|delete)/(\\w{,32}) (\\w{,32}))|((add|delete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,128}))|((mark complete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,128})/([A-Za-z0-9]{,256}))$")
 
 var userPath = regexp.MustCompile("^/(view|add|delete)/(\\w{,32})\\s(\\w{,32})")
 
@@ -230,45 +230,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	last := r.FormValue("last name")
 
 	var count int // add if absent (this is just for school)
-	// FIXME
-	// db.Where("first_name = ? AND last_name = ?", first, last).Count...
-	// db.Exec("SELECT * FROM Users WHERE first_name = @ AND last_name = @", first, last)
 	if db.Find(&User{FirstName: first, LastName: last}).Count(&count); count == 0 {
 		db.Create(&User{FirstName: first, LastName: last})
 		println("New User:", first, last) // DEBUG
 	}
 
-	r.URL.Path = "/view/" + first + " " + last + "/"
+	http.Redirect(w, r, "/view/"+first+" "+last+"/", http.StatusFound)
 	viewHandler(w, r)
 }
-
-// func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
-// 	p, err := loadPage(title)
-// 	if err != nil {
-// 		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
-// 		return
-// 	}
-// 	renderTemplate(w, "view", p)
-// }
-
-// func editHandler(w http.ResponseWriter, r *http.Request, title string) {
-// 	p, err := loadPage(title)
-// 	if err != nil {
-// 		p = &Page{Title: title}
-// 	}
-// 	renderTemplate(w, "edit", p)
-// }
-
-// func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
-// 	body := r.FormValue("body")
-// 	p := &Page{Title: title, Body: []byte(body)}
-// 	err := p.save()
-// 	if err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// 	http.Redirect(w, r, "/view/"+title, http.StatusFound)
-// }
 
 func main() {
 	db := MustConnect()
