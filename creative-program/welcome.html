@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!--
+        Ivan Webber
+        HTML for CS 372 Project
+        Describes a to-do webapp
+    -->
+  <head>
+    <title>Tasks</title>
+	<link href="tasks.css" type="text/css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1 id="title">Welcome! Login or register.</h1>
+    <form action="/login/" name=f method="GET">
+        <input maxLength=32 name="first name" placeholder="first name..." title="First Name" pattern="\w+">
+        <input maxLength=32 name="last name" placeholder="last name..." title="Last Name" pattern="\w+">
+        <input type=submit value="See Tasks" name=tasks>
+    </form>
+</body>
+</html>

@@ -10,33 +10,34 @@
 	<link href="tasks.css" type="text/css" rel="stylesheet" />
   </head>
   <body>
-    <h1 id="title">Tasks</h1>
-    {{ $owner := printf "%s %s" .Owner.FirstName .Owner.LastName }}
-    <div id="user">{{ $owner }}</div>
+    <h1 id="title">View Tasks</h1>
+    {{ .Owner }} {{ $Owner := .Owner }}
+    <div id="user">{{ .Owner }}</div>
     {{ range $l := .Lists }}
-      <h2>$l.Title</h2>
+      <h2>{{ $l.Title }}</h2>
       <ul class="list">
-          {{ range $t := $l.List }}
-            <li class="{{if $t.IsComplete}}finished{{end}} task">
+          {{ range $t := $l.Tasks }}
+            <li class="{{if $t.Completed}}finished{{end}} task">
                 <h3>{{$t.Title}}</h3>
-                <p>{{ if $t.IsComplete }}Was due{{ else }}Due on{{ end }} {{$t.DueDate}}</p>
+                <p>{{ if $t.Completed }}Was due{{ else }}Due on{{ end }} {{$t.DueDate}}</p>
                 <p>{{ $t.Details }}</p>
                 <ul class="options">
-                  <li>[<a href="/mark completed/{{$owner}}/{{$l.Title}}/{{$t.Title}}">mark completed</a>]</li>
-                  <li>[<a href="/edit/{{$owner}}/{{$l.Title}}/{{$t.Title}}">edit</a>]</li>
-                  <li>[<a href="/delete/{{$owner}}/{{$l.Title}}/{{$t.Title}}">delete</a>]</li>
+                  <li>[<a href="/mark complete/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">mark completed</a>]</li>
+                  <li>[<a href="/edit/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">edit</a>]</li>
+                  <li>[<a href="/delete/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">delete</a>]</li>
                 </ul>
             </li>
           {{ end }}
 
-          <form action="/add/{{$owner}}/{{$l.Title}}" method="POST">
+          <form action="/add/{{ $Owner }}/{{ $l.Title }}" method="POST">
           <li class="task">
-            <div><input maxLength=256 size=70 name=title value="" title="Task Title"></div>
-            <div><input type="date" name="due date" title="Due Date"></div>
-            <div><textarea name="details" rows="20" cols="20"></textarea></div>
-            <div><input type="submit" value="Save"></div>
+            <div><input type=text maxLength=128 size=70 name=title placeholder="New Task" title="Task Title"></div>
+            <div><input type=date name="due date" title="Due Date"></div>
+            <div><textarea name=details rows="20" cols="20"></textarea></div>
+            <div><input type=submit value="Save"></div>
           </li>
           </form>
+          [<a href="/delete/{{ $Owner }}/{{ $l.Title }}">delete</a>]
       </ul>
     {{ end }}
   </body>

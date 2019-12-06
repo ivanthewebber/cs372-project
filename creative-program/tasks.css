@@ -1,0 +1,30 @@
+body {
+    font-family: 'Helvetica', 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: black;
+}
+
+h1 {
+    text-align: center;
+    font-size: 36px;
+    letter-spacing: 3px;
+    font-weight: bold;
+    font-size: 40px;
+}
+
+.list {
+    flex-flow: column;
+    text-align: center;
+}
+
+.task {
+    width: 400;
+    height: 400;
+    border: 5 solid black;
+    background-color: lightgray;
+}
+
+.options {
+    display: inline;
+    list-style-type: none;
+}
