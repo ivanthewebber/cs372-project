@@ -1,10 +1,12 @@
-package main
+package tasks
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/jinzhu/gorm"
+
+	// register sql driver
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 )
 
@@ -12,24 +14,39 @@ var server = "localhost"
 var port = 1433
 var database = "SampleDB" // TODO: make a new TasksDB
 
-// Define a User model struct
+// User is a named owner of lists
 type User struct {
 	gorm.Model
 	FirstName string
 	LastName  string
 }
 
-// Define a Task model struct
+// Task is a to-do item
 type Task struct {
 	gorm.Model
 	Title      string
 	Details    string
 	DueDate    string
 	IsComplete bool
-	UserID     uint
+	//TaskListID uint
+	UserID uint // replace with TaskListID
 }
 
-// Read and print all the tasks
+// TaskList is named set of tasks
+type TaskList struct {
+	//gorm.Model
+	Title string
+	List  []Task // matched by id in db
+	//userID uint
+}
+
+// UserFile is User and their TaskLists
+type UserFile struct {
+	Owner User
+	Lists []TaskList
+}
+
+// ReadAllTasks prints all the tasks
 func ReadAllTasks(db *gorm.DB) {
 	var users []User
 	var tasks []Task
@@ -45,21 +62,21 @@ func ReadAllTasks(db *gorm.DB) {
 	}
 }
 
-// Update a task based on a user
-func UpdateSomeonesTask(db *gorm.DB, userId int) {
+// UpdateSomeonesTask updates a task based on a user
+func UpdateSomeonesTask(db *gorm.DB, userID int) {
 	var task Task
-	db.Where("user_id = ?", userId).First(&task).Update("Title", "Buy donuts for Luis")
+	db.Where("user_id = ?", userID).First(&task).Update("Title", "Buy donuts for Luis")
 	fmt.Printf("Title: %s\nDueDate: %s\nIsComplete:%t\n\n",
 		task.Title, task.DueDate, task.IsComplete)
 }
 
-// Delete all the tasks for a user
-func DeleteSomeonesTasks(db *gorm.DB, userId int) {
-	db.Where("user_id = ?", userId).Delete(&Task{})
-	fmt.Printf("Deleted all tasks for user %d", userId)
+// DeleteSomeonesTasks deletes all the tasks for a user
+func DeleteSomeonesTasks(db *gorm.DB, userID int) {
+	db.Where("user_id = ?", userID).Delete(&Task{})
+	fmt.Printf("Deleted all tasks for user %d", userID)
 }
 
-func main() {
+func not_main() {
 	connectionString := fmt.Sprintf("server=%s;port=%d;database=%s",
 		server, port, database)
 	db, err := gorm.Open("mssql", connectionString)
@@ -76,20 +93,20 @@ func main() {
 
 	// Create awesome Users
 	fmt.Println("Creating awesome users...")
-	db.Create(&User{FirstName: "Andrea", LastName: "Lam"})   //UserID: 1
-	db.Create(&User{FirstName: "Meet", LastName: "Bhagdev"}) //UserID: 2
-	db.Create(&User{FirstName: "Luis", LastName: "Bosquez"}) //UserID: 3
+	db.Create(&User{FirstName: "Andrea", LastName: "Lam"})   //userID: 1
+	db.Create(&User{FirstName: "Meet", LastName: "Bhagdev"}) //userID: 2
+	db.Create(&User{FirstName: "Luis", LastName: "Bosquez"}) //userID: 3
 
 	// Create appropriate Tasks for each user
 	fmt.Println("Creating new appropriate tasks...")
 	db.Create(&Task{
-		Title: "Do laundry", DueDate: "2017-03-30", IsComplete: false, UserID: 1})
+		Title: "Do laundry", DueDate: "2017-03-30", IsComplete: false, userID: 1})
 	db.Create(&Task{
-		Title: "Mow the lawn", DueDate: "2017-03-30", IsComplete: false, UserID: 2})
+		Title: "Mow the lawn", DueDate: "2017-03-30", IsComplete: false, userID: 2})
 	db.Create(&Task{
-		Title: "Do more laundry", DueDate: "2017-03-30", IsComplete: false, UserID: 3})
+		Title: "Do more laundry", DueDate: "2017-03-30", IsComplete: false, userID: 3})
 	db.Create(&Task{
-		Title: "Watch TV", DueDate: "2017-03-30", IsComplete: false, UserID: 3})
+		Title: "Watch TV", DueDate: "2017-03-30", IsComplete: false, userID: 3})
 
 	// Read
 	fmt.Println("\nReading all the tasks...")
