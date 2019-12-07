@@ -33,14 +33,14 @@ import (
 // User is a named owner of lists
 type User struct {
 	gorm.Model
-	FirstName string
-	LastName  string
+	FirstName string `gorm:"primary_key"`
+	LastName  string `gorm:"primary_key"`
 }
 
 // Task is a to-do item
 type Task struct {
 	gorm.Model
-	Title      string
+	Title      string `gorm:"primary_key"`
 	Details    string
 	DueDate    string
 	Completed  bool
@@ -50,7 +50,7 @@ type Task struct {
 // TaskList is named set of tasks
 type TaskList struct {
 	gorm.Model
-	Title  string
+	Title  string `gorm:"primary_key"`
 	UserID uint
 }
 
@@ -157,7 +157,7 @@ func getNameList(url string) (first, last, list string) {
 	return "", "", ""
 }
 
-var taskPath = regexp.MustCompile("^/(view|add|delete)/(\\w+)\\s(\\w+)/([^/]+)/([^/]+)")
+var taskPath = regexp.MustCompile("^/(view|add|delete|mark complete)/(\\w+)\\s(\\w+)/([^/]+)/([^/]+)")
 
 func getNameListTask(url string) (first, last, list, task string) {
 	m := taskPath.FindStringSubmatch(url)
@@ -165,6 +165,44 @@ func getNameListTask(url string) (first, last, list, task string) {
 		return m[2], m[3], m[4], m[5]
 	}
 	return "", "", "", ""
+}
+
+func delHandler(w http.ResponseWriter, r *http.Request) {
+	if taskPath.Match([]byte(r.URL.Path)) {
+		delTaskHandler(w, r)
+	} else {
+		delListHandler(w, r)
+	}
+}
+
+func delTaskHandler(w http.ResponseWriter, r *http.Request) {
+	first, last, title, task := getNameListTask(r.URL.Path)
+	fmt.Printf("F: %s\nL: %s\nTitle: %s\nTask: %s\n", first, last, title, task)
+
+	var user User
+	db.First(&user, &User{FirstName: first, LastName: last})
+
+	var list TaskList
+	db.First(&list, &TaskList{Title: title, UserID: user.ID})
+
+	db.Delete(&Task{}, &Task{Title: task, TaskListID: list.ID})
+
+	retToView(first, last, w, r)
+}
+
+func delListHandler(w http.ResponseWriter, r *http.Request) {
+	first, last, title := getNameList(r.URL.Path)
+	fmt.Printf("F: %s\nL: %s\nTitle: %s\n", first, last, title)
+
+	var user User
+	db.First(&user, &User{FirstName: first, LastName: last})
+
+	var list TaskList
+	db.First(&list, &TaskList{Title: title, UserID: user.ID})
+	db.Delete(&Task{}, &Task{TaskListID: list.ID})
+	db.Delete(&TaskList{}, &list)
+
+	retToView(first, last, w, r)
 }
 
 func addHandler(w http.ResponseWriter, r *http.Request) {
@@ -177,17 +215,15 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 
 func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	first, last, title := getNameList(r.URL.Path)
-	println("addTaskHandler:", first, last, title) // DEBUG
 
 	var user User
-	db.Model(&User{FirstName: first, LastName: last})
-	then := db.First(user, &User{FirstName: first, LastName: last})
+	db.First(&user, &User{FirstName: first, LastName: last})
 
 	var list TaskList
-	then.First(list, &TaskList{Title: title, UserID: user.ID})
+	db.First(&list, &TaskList{Title: title, UserID: user.ID})
 
 	// make list associated with user
-	then.Create(&Task{Title: r.FormValue("title"), DueDate: r.FormValue("due date"), Details: r.FormValue("details"), TaskListID: list.ID})
+	db.Create(&Task{Title: r.FormValue("title"), DueDate: r.FormValue("due date"), Details: r.FormValue("details"), TaskListID: list.ID})
 
 	retToView(first, last, w, r)
 }
@@ -196,10 +232,30 @@ func addListHandler(w http.ResponseWriter, r *http.Request) {
 	first, last := getName(r.URL.Path)
 
 	var user User
-	then := db.First(user, &User{FirstName: first, LastName: last})
+	db.Find(&user, &User{FirstName: first, LastName: last})
 
 	// make list associated with user
-	then.Create(&TaskList{Title: r.FormValue("list title"), UserID: user.ID})
+	db.Create(&TaskList{Title: r.FormValue("list title"), UserID: user.ID})
+
+	retToView(first, last, w, r)
+}
+
+func markHandler(w http.ResponseWriter, r *http.Request) {
+	first, last, title, taskTitle := getNameListTask(r.URL.Path)
+	fmt.Printf("Path: %s\nF: %s\nL: %s\nTitle: %s\nTask: %s\n", r.URL.Path, first, last, title, taskTitle)
+
+	var user User
+	db.First(&user, &User{FirstName: first, LastName: last})
+
+	var list TaskList
+	db.First(&list, &TaskList{Title: title, UserID: user.ID})
+
+	var task Task
+	db.First(&task, &Task{Title: taskTitle, TaskListID: list.ID})
+
+	task.Completed = !task.Completed
+
+	db.Save(&task)
 
 	retToView(first, last, w, r)
 }
@@ -232,8 +288,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	var uFile = UserFile{first + " " + last, nil}
 
 	var user User
-	db2 := db.Find(&User{FirstName: first, LastName: last})
-	db2.First(&user)
+	db.Find(&user, &User{FirstName: first, LastName: last})
 
 	var lists []TaskList
 	db.Model(&user).Related(&lists) // all lists for user
@@ -283,6 +338,8 @@ func main() {
 	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/tasks.css", cssHandler)
 	http.HandleFunc("/add/", addHandler)
+	http.HandleFunc("/delete/", delHandler)
+	http.HandleFunc("/mark complete/", markHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
