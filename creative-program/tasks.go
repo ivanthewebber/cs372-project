@@ -35,23 +35,23 @@ type User struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	TaskLists []TaskList
 }
 
 // Task is a to-do item
 type Task struct {
 	gorm.Model
-	Title     string
-	Details   string
-	DueDate   string
-	Completed bool
+	Title      string
+	Details    string
+	DueDate    string
+	Completed  bool
+	TaskListID uint
 }
 
 // TaskList is named set of tasks
 type TaskList struct {
 	gorm.Model
-	Title string
-	Tasks []Task
+	Title  string
+	UserID uint
 }
 
 func MustConnect() *gorm.DB {
@@ -92,17 +92,25 @@ func Example() *gorm.DB {
 
 	// Create list for each user
 	fmt.Println("Creating lists...")
-	db.Model(&User{FirstName: "Andrea", LastName: "Lam"}).Association("TaskLists").Append(&TaskList{Title: "Andrea's list"})
-	db.Model(&User{FirstName: "Meet", LastName: "Bhagdev"}).Association("TaskLists").Append(&TaskList{Title: "Meet's List"})
-	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Append(&TaskList{Title: "Luis's List"})
-	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Append(&TaskList{Title: "Luis's Other List"})
+	db.Create(&TaskList{
+		Title: "Andrea's list", UserID: 1})
+	db.Create(&TaskList{
+		Title: "Meet's List", UserID: 2})
+	db.Create(&TaskList{
+		Title: "Luis's List", UserID: 3})
+	db.Create(&TaskList{
+		Title: "Luis's Other List", UserID: 3})
 
 	// Create appropriate Tasks for each user
 	fmt.Println("Creating new appropriate tasks...")
-	db.Model(&User{FirstName: "Andrea", LastName: "Lam"}).Association("TaskLists").Find(&TaskList{Title: "Andrea's list"}).Append(&Task{Title: "Do laundry", DueDate: "2017-03-30", Completed: false})
-	db.Model(&User{FirstName: "Meet", LastName: "Bhagdev"}).Association("TaskLists").Find(&TaskList{Title: "Meet's List"}).Append(&Task{Title: "Mow the lawn", DueDate: "2017-03-30", Completed: false})
-	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Find(&TaskList{Title: "Luis's List"}).Append(&Task{Title: "Do more laundry", DueDate: "2017-03-30", Completed: false})
-	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Find(&TaskList{Title: "Luis's Other List"}).Append(&Task{Title: "Watch TV", DueDate: "2017-03-30", Completed: false})
+	db.Create(&Task{
+		Title: "Do laundry", DueDate: "2017-03-30", Completed: false, TaskListID: 1})
+	db.Create(&Task{
+		Title: "Mow the lawn", DueDate: "2017-03-30", Completed: false, TaskListID: 2})
+	db.Create(&Task{
+		Title: "Do more laundry", DueDate: "2017-03-30", Completed: false, TaskListID: 3})
+	db.Create(&Task{
+		Title: "Watch TV", DueDate: "2017-03-30", Completed: false, TaskListID: 3})
 
 	return db
 }
@@ -171,7 +179,15 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 	first, last, title := getNameList(r.URL.Path)
 	println("addTaskHandler:", first, last, title) // DEBUG
 
-	db.Model(&User{FirstName: first, LastName: last}).Association("TaskLists").Find(&TaskList{Title: title}).Append(&Task{Title: r.FormValue("title"), DueDate: r.FormValue("due date"), Details: r.FormValue("details")})
+	var user User
+	db.Model(&User{FirstName: first, LastName: last})
+	then := db.First(user, &User{FirstName: first, LastName: last})
+
+	var list TaskList
+	then.First(list, &TaskList{Title: title, UserID: user.ID})
+
+	// make list associated with user
+	then.Create(&Task{Title: r.FormValue("title"), DueDate: r.FormValue("due date"), Details: r.FormValue("details"), TaskListID: list.ID})
 
 	retToView(first, last, w, r)
 }
@@ -179,9 +195,11 @@ func addTaskHandler(w http.ResponseWriter, r *http.Request) {
 func addListHandler(w http.ResponseWriter, r *http.Request) {
 	first, last := getName(r.URL.Path)
 
-	println("addListHandler:", first, last) // DEBUG
+	var user User
+	then := db.First(user, &User{FirstName: first, LastName: last})
 
-	db.Model(&User{FirstName: first, LastName: last}).Association("TaskLists").Append(&TaskList{Title: r.FormValue("list title")})
+	// make list associated with user
+	then.Create(&TaskList{Title: r.FormValue("list title"), UserID: user.ID})
 
 	retToView(first, last, w, r)
 }
