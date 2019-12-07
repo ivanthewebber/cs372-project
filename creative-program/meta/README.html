@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Creative Project</title>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        
+    </head>
+    <body class="vscode-light">
+        <h1 id="creative-project">Creative Project</h1>
+<h2 id="ivan-webber">Ivan Webber</h2>
+<p>For my creative project I wanted to highlight Go's utility in networking. Go is mostly used in cloud computing, so I decided to make a RESTful web app for keeping track of To-Do items.</p>
+<p>In my code attempted to follow <a href="https://golang.org/doc/effective_go.html#commentary">golang.org's recommendations</a> for documentation and style. Additionally I made <a href="%22github.com/ivanthewebber/csc372-project/rot13/rot13_tests.go%22">test cases</a> using Golang's unit-test framework.</p>
+<p>In order to learn how to implement each of the components of this application I followed a number of independent tutorials which I highly recomend (below).</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>url</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SQL Server, Windows, Go sql</td>
+<td><a href="https://www.microsoft.com/en-us/sql-server/developer-get-started/go/windows">https://www.microsoft.com/en-us/sql-server/developer-get-started/go/windows</a></td>
+</tr>
+<tr>
+<td>Writing Web Applications</td>
+<td><a href="https://golang.org/doc/articles/wiki/">https://golang.org/doc/articles/wiki/</a></td>
+</tr>
+<tr>
+<td>A Tour of Go</td>
+<td><a href="https://tour.golang.org/">https://tour.golang.org/</a></td>
+</tr>
+<tr>
+<td>Using Templates</td>
+<td><a href="https://blog.gopheracademy.com/advent-2017/using-go-templates/">https://blog.gopheracademy.com/advent-2017/using-go-templates/</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="model">Model:</h2>
+<p>My code declares datatypes that are stored as tables on a database.</p>
+<p>Connection to the database (and conversions of data) is aided by the gorm package from <a href="http://github.com/jinzhu/gorm">github.com/jinzhu/gorm</a>. This popular package helps implement an Object-Relational Mapping (ORM) style of database. I stuck to the more traditional database style in my implementation.</p>
+<p>Each struct is converted by gorm into a corresponding table in the database. The name of the table is the lower_snake_case plural name of the struct. Each field corresponds to a lower_snake_case column in the table (except the gorm.Model which becomes a number of rows with ID, last edit date, and etc.).</p>
+<pre><code class="language-go"><div><span class="hljs-comment">// User is a named owner of lists</span>
+<span class="hljs-keyword">type</span> User <span class="hljs-keyword">struct</span> {
+	gorm.Model
+	FirstName <span class="hljs-keyword">string</span> <span class="hljs-string">`gorm:"primary_key"`</span>
+	LastName  <span class="hljs-keyword">string</span> <span class="hljs-string">`gorm:"primary_key"`</span>
+}
+
+<span class="hljs-comment">// Task is a to-do item</span>
+<span class="hljs-keyword">type</span> Task <span class="hljs-keyword">struct</span> {
+	gorm.Model
+	Title      <span class="hljs-keyword">string</span> <span class="hljs-string">`gorm:"primary_key"`</span>
+	Details    <span class="hljs-keyword">string</span>
+	DueDate    <span class="hljs-keyword">string</span>
+	Completed  <span class="hljs-keyword">bool</span>
+	TaskListID <span class="hljs-keyword">uint</span>
+}
+
+<span class="hljs-comment">// TaskList is named set of tasks</span>
+<span class="hljs-keyword">type</span> TaskList <span class="hljs-keyword">struct</span> {
+	gorm.Model
+	Title  <span class="hljs-keyword">string</span> <span class="hljs-string">`gorm:"primary_key"`</span>
+	UserID <span class="hljs-keyword">uint</span>
+}
+</div></code></pre>
+<h2 id="view--controller">View &amp; Controller</h2>
+<p>My app provies data to the user via http response and requests (i.e. RESTful application).</p>
+<p>The html package provides many methods for serving content, but none of these methods are encrytped. For encryption one is able to change html out for the net package which uses TLS 1.3. Following the extra steps for TLS was beyond the scope of this assignment.</p>
+<table>
+<thead>
+<tr>
+<th>endpoint</th>
+<th>purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/welcome</td>
+<td>user's first point of contact</td>
+</tr>
+<tr>
+<td>/login</td>
+<td>finds or lists user in DB</td>
+</tr>
+<tr>
+<td>/view/firstname lastname</td>
+<td>display's user's to-do lists</td>
+</tr>
+<tr>
+<td>/add/firstname lastname</td>
+<td>request to add a list</td>
+</tr>
+<tr>
+<td>/delete/firstname lastname</td>
+<td>request to delete a list</td>
+</tr>
+<tr>
+<td>/add/firstname lastname/list</td>
+<td>request to add task to list</td>
+</tr>
+<tr>
+<td>/delete/firstname lastname/list</td>
+<td>request to delete task from list</td>
+</tr>
+<tr>
+<td>/mark/firstname lastname/list/task</td>
+<td>toggle's the .Completed field of a task</td>
+</tr>
+</tbody>
+</table>
+<p>NOTE: the server will be live at localhost:8080</p>
+<h2 id="regex">RegEx</h2>
+<p>Most open-source implementations of Regular Expressions (i.e. RegEx or RegExp) tend to be slow (including Python's, I've timed it and looked at the implementation). However, Go's is much faster because it creates a digraph and iteratively searches for matches instead of recursing. <a href="https://swtch.com/~rsc/regexp/regexp1.html">I think it's very interesting.</a></p>
+<p>It's best to compile each regexp only once, so it's an accepted idiom to have them as global variables (this also allows sharing). Notice that these are naturally constants.</p>
+<h2 id="templates">templates</h2>
+<p>Golang's template package provides powerful tools for templating text and html.</p>
+<p>By execution the template a user-specific page is generated. Consider, for example, my todo list:</p>
+<pre><code class="language-html"><div>.
+.
+.
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"user"</span>&gt;</span>Ivan Webber<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+
+  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"list"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">h2</span>&gt;</span>Home Work<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
+    
+    <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>    
+      <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"finished task"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>Write Code<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Was due Monday<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>These details...<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"options"</span>&gt;</span>
+          <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>[<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/mark/Ivan%20Webber/Home20%Work/Write20%Code"</span>&gt;</span>mark imcomplete<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>-
+          <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/edit/Ivan%20Webber/Home20%Work/Write20%Code"</span>&gt;</span>edit<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>-
+          <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/delete/Ivan%20Webber/Home20%Work/Write20%Code"</span>&gt;</span>delete<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>]<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+      
+      <span class="hljs-tag">&lt;<span class="hljs-name">li</span> <span class="hljs-attr">class</span>=<span class="hljs-string">" task"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>My Other Project<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Due on Wednesday<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Those details...<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">hr</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">ul</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"options"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>[<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"/mark/Ivan%20Webber/Home20%Work/My20%Other20%Project"</span>&gt;</span>mark complete<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>-
+.
+.
+.
+</div></code></pre>
+<p>Like the Regular Expressions it's best to only parse the template once.</p>
+<h2 id="runtime">Runtime</h2>
+<p><img src="file:///c:\Users\ivand\go\src\github.com\ivanthewebber\cs372-project\creative-program\meta\login.png" alt="login page">
+<img src="file:///c:\Users\ivand\go\src\github.com\ivanthewebber\cs372-project\creative-program\meta\view.png" alt="view of lists">
+<img src="file:///c:\Users\ivand\go\src\github.com\ivanthewebber\cs372-project\creative-program\meta\mark.png" alt="mark task completed">
+<img src="file:///c:\Users\ivand\go\src\github.com\ivanthewebber\cs372-project\creative-program\meta\date.png" alt="select a date">
+<img src="file:///c:\Users\ivand\go\src\github.com\ivanthewebber\cs372-project\creative-program\meta\task.png" alt="after adding a new task"></p>
+
+    </body>
+    </html>

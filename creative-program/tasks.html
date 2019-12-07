@@ -28,7 +28,7 @@
         <p>{{ $t.Details }}</p>
         <hr>
         <ul class="options">
-          <li>[<a href="/mark complete/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">mark {{ if $t.Completed }}im{{ end }}complete</a></li>-
+          <li>[<a href="/mark/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">mark {{ if $t.Completed }}im{{ end }}complete</a></li>-
           <!--<li><a href="/edit/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">edit</a></li>-->
           <li><a href="/delete/{{ $Owner }}/{{ $l.Title }}/{{ $t.Title }}">delete</a>]</li>
         </ul>
