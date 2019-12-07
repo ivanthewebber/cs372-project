@@ -1,4 +1,4 @@
-package main
+package tasks
 
 import (
 	"fmt"
@@ -17,18 +17,24 @@ func TestTemplate(t *testing.T) {
 	f, _ := os.OpenFile("out.html", os.O_RDWR, os.ModePerm)
 	defer f.Close()
 
+	type List struct {
+		Title string
+		Tasks []Task
+	}
+
+	type UserFile struct {
+		Owner string
+		Lists []List
+	}
+
 	now := time.Now()
 	err := templ.Execute(f,
 		UserFile{
-			Owner: User{
-				Model:     gorm.Model{0, now, now, &now},
-				FirstName: "Ivan",
-				LastName:  "Webber",
-			},
-			Lists: []TaskList{
-				TaskList{
+			Owner: "Ivan Webber",
+			Lists: []List{
+				List{
 					Title: "Make this work",
-					List: []Task{
+					Tasks: []Task{
 						Task{
 							gorm.Model{0, now, now, &now},
 							"The Title",

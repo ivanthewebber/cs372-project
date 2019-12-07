@@ -4,6 +4,10 @@ body {
     color: black;
 }
 
+#user {
+    text-align: center;
+}
+
 h1 {
     text-align: center;
     font-size: 36px;
@@ -12,19 +16,75 @@ h1 {
     font-size: 40px;
 }
 
+hr {
+    border: 0;
+    height: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
 .list {
     flex-flow: column;
-    text-align: center;
+    list-style-type: none;
+    background-color: darkblue;
+    padding: 5px;
+}
+
+.list, .task, .list h2, #addList {
+    border-radius: 7px;
+}
+
+.list ul {
+    list-style-type: none;
+    display: inline;
+}
+
+.list h2 {
+    background-color: whitesmoke;
+    padding: 5px;
+    margin-top: 0px;
+    border: 1px solid slategrey;
 }
 
 .task {
     width: 400;
     height: 400;
-    border: 5 solid black;
+    border: 2px solid slategrey;
+    background-color: whitesmoke;
+    padding: 5px;
+    margin: 5px;
+}
+
+.listActions {
+    border-radius: 10px;
+    background-color: lightgray;
+    width: fit-content;
+    padding: 4px;
+    margin-left: 7px;
+    border: 1px solid slategrey;
+}
+
+.list h2, .task * {
+    margin-bottom: 0px;
+}
+
+.add.task div, .add.task div * {
+    width: 100%;
+}
+
+.task.finished {
     background-color: lightgray;
 }
 
-.options {
-    display: inline;
+.list .options {
     list-style-type: none;
+    display: flex;
+    padding-left: 0px;
+}
+
+#addList {
+    padding: 5px;
+    margin-top: 5px;
+    display: flex;
+    background-color: darkblue;
 }

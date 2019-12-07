@@ -35,23 +35,23 @@ type User struct {
 	gorm.Model
 	FirstName string
 	LastName  string
+	TaskLists []TaskList
 }
 
 // Task is a to-do item
 type Task struct {
 	gorm.Model
-	Title      string
-	Details    string
-	DueDate    string
-	Completed  bool
-	TaskListID uint
+	Title     string
+	Details   string
+	DueDate   string
+	Completed bool
 }
 
 // TaskList is named set of tasks
 type TaskList struct {
 	gorm.Model
-	Title  string
-	UserID uint
+	Title string
+	Tasks []Task
 }
 
 func MustConnect() *gorm.DB {
@@ -92,25 +92,17 @@ func Example() *gorm.DB {
 
 	// Create list for each user
 	fmt.Println("Creating lists...")
-	db.Create(&TaskList{
-		Title: "Andrea's list", UserID: 1})
-	db.Create(&TaskList{
-		Title: "Meet's List", UserID: 2})
-	db.Create(&TaskList{
-		Title: "Luis's List", UserID: 3})
-	db.Create(&TaskList{
-		Title: "Luis's Other List", UserID: 3})
+	db.Model(&User{FirstName: "Andrea", LastName: "Lam"}).Association("TaskLists").Append(&TaskList{Title: "Andrea's list"})
+	db.Model(&User{FirstName: "Meet", LastName: "Bhagdev"}).Association("TaskLists").Append(&TaskList{Title: "Meet's List"})
+	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Append(&TaskList{Title: "Luis's List"})
+	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Append(&TaskList{Title: "Luis's Other List"})
 
 	// Create appropriate Tasks for each user
 	fmt.Println("Creating new appropriate tasks...")
-	db.Create(&Task{
-		Title: "Do laundry", DueDate: "2017-03-30", Completed: false, TaskListID: 1})
-	db.Create(&Task{
-		Title: "Mow the lawn", DueDate: "2017-03-30", Completed: false, TaskListID: 2})
-	db.Create(&Task{
-		Title: "Do more laundry", DueDate: "2017-03-30", Completed: false, TaskListID: 3})
-	db.Create(&Task{
-		Title: "Watch TV", DueDate: "2017-03-30", Completed: false, TaskListID: 3})
+	db.Model(&User{FirstName: "Andrea", LastName: "Lam"}).Association("TaskLists").Find(&TaskList{Title: "Andrea's list"}).Append(&Task{Title: "Do laundry", DueDate: "2017-03-30", Completed: false})
+	db.Model(&User{FirstName: "Meet", LastName: "Bhagdev"}).Association("TaskLists").Find(&TaskList{Title: "Meet's List"}).Append(&Task{Title: "Mow the lawn", DueDate: "2017-03-30", Completed: false})
+	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Find(&TaskList{Title: "Luis's List"}).Append(&Task{Title: "Do more laundry", DueDate: "2017-03-30", Completed: false})
+	db.Model(&User{FirstName: "Luis", LastName: "Bosquez"}).Association("TaskLists").Find(&TaskList{Title: "Luis's Other List"}).Append(&Task{Title: "Watch TV", DueDate: "2017-03-30", Completed: false})
 
 	return db
 }
@@ -134,48 +126,64 @@ func Example() *gorm.DB {
 // ./delete/firstname lastname/list
 // ./mark complete/firstname lastname/list/task
 
-var validPath = regexp.MustCompile("^/(welcome|login)|((view|add|delete)/(\\w{,32}) (\\w{,32}))|((add|delete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,128}))|((mark complete)/(\\w{,32}) (\\w{,32})/([A-Za-z0-9]{,128})/([A-Za-z0-9]{,256}))$")
+var validPath = regexp.MustCompile("^/(welcome|login)|((view|add|delete)/(\\w+) (\\w+))|((add|delete)/(\\w+) (\\w+)/([A-Za-z0-9]+))|((mark complete)/(\\w+) (\\w+)/([A-Za-z0-9]+)/([A-Za-z0-9]+))$")
 
-var userPath = regexp.MustCompile("^/(view|add|delete)/(\\w{,32})\\s(\\w{,32})")
+var userPath = regexp.MustCompile("^/(view|add|delete)/(\\w+) (\\w+)")
 
 func getName(url string) (first, last string) {
 	m := userPath.FindStringSubmatch(url)
+
 	if m != nil {
 		return m[2], m[3]
 	}
 	return "", ""
 }
 
-var listPath = regexp.MustCompile("^/(view|add|delete)/(\\w{,32})\\s(\\w{,32})/([A-Za-z0-9\\s]{,128})")
+var listPath = regexp.MustCompile("^/(view|add|delete)/(\\w+)\\s(\\w+)/([^/]+)")
 
 func getNameList(url string) (first, last, list string) {
-	m := userPath.FindStringSubmatch(url)
+	m := listPath.FindStringSubmatch(url)
 	if m != nil {
 		return m[2], m[3], m[4]
 	}
 	return "", "", ""
 }
 
-var taskPath = regexp.MustCompile("^/(view|add|delete)/(\\w{,32})\\s(\\w{,32})/([A-Za-z0-9\\s]{,128})/([A-Za-z0-9\\s]{,256})$")
+var taskPath = regexp.MustCompile("^/(view|add|delete)/(\\w+)\\s(\\w+)/([^/]+)/([^/]+)")
 
 func getNameListTask(url string) (first, last, list, task string) {
-	m := userPath.FindStringSubmatch(url)
+	m := taskPath.FindStringSubmatch(url)
 	if m != nil {
 		return m[2], m[3], m[4], m[5]
 	}
 	return "", "", "", ""
 }
 
-// find and pass requested page
-func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		m := validPath.FindStringSubmatch(r.URL.Path)
-		if m == nil {
-			http.NotFound(w, r)
-			return
-		}
-		fn(w, r, m[2])
+func addHandler(w http.ResponseWriter, r *http.Request) {
+	if listPath.Match([]byte(r.URL.Path)) {
+		addTaskHandler(w, r)
+	} else {
+		addListHandler(w, r)
 	}
+}
+
+func addTaskHandler(w http.ResponseWriter, r *http.Request) {
+	first, last, title := getNameList(r.URL.Path)
+	println("addTaskHandler:", first, last, title) // DEBUG
+
+	db.Model(&User{FirstName: first, LastName: last}).Association("TaskLists").Find(&TaskList{Title: title}).Append(&Task{Title: r.FormValue("title"), DueDate: r.FormValue("due date"), Details: r.FormValue("details")})
+
+	retToView(first, last, w, r)
+}
+
+func addListHandler(w http.ResponseWriter, r *http.Request) {
+	first, last := getName(r.URL.Path)
+
+	println("addListHandler:", first, last) // DEBUG
+
+	db.Model(&User{FirstName: first, LastName: last}).Association("TaskLists").Append(&TaskList{Title: r.FormValue("list title")})
+
+	retToView(first, last, w, r)
 }
 
 func welcomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -225,6 +233,12 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func retToView(first string, last string, w http.ResponseWriter, r *http.Request) {
+	r.URL.Path = "/view/" + first + " " + last + "/"
+	http.Redirect(w, r, r.URL.Path, http.StatusFound)
+	viewHandler(w, r)
+}
+
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	first := r.FormValue("first name")
 	last := r.FormValue("last name")
@@ -235,18 +249,22 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		println("New User:", first, last) // DEBUG
 	}
 
-	http.Redirect(w, r, "/view/"+first+" "+last+"/", http.StatusFound)
-	viewHandler(w, r)
+	retToView(first, last, w, r)
+}
+
+func missHandler(w http.ResponseWriter, r *http.Request) {
+	println("we saw: ", r.URL.Path)
 }
 
 func main() {
-	db := MustConnect()
+	db := Example()
 	defer db.Close()
 
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/welcome/", welcomeHandler)
 	http.HandleFunc("/login/", loginHandler)
-	http.HandleFunc("/tasks.css", cssHandler) // FIXME
+	http.HandleFunc("/tasks.css", cssHandler)
+	http.HandleFunc("/add/", addHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

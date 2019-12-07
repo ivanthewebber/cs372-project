@@ -1,50 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-    
-  <head>
-    <title>Tasks</title>
-	<link href="tasks.css" type="text/css" rel="stylesheet" />
-  </head>
-  <body>
-    <h1 id="title">Tasks</h1>
-    
-    <div id="user">Ivan Webber</div>
-    
-      <h2>$l.Title</h2>
-      <ul class="list">
-          
-            <li class="finished task">
-                <h3>The Title</h3>
-                <p>Was due A DueDate</p>
-                <p>The details...</p>
-                <ul class="options">
-                  <li>[<a href="/mark completed/Ivan%20Webber/Make%20this%20work/The%20Title">mark completed</a>]</li>
-                  <li>[<a href="/edit/Ivan%20Webber/Make%20this%20work/The%20Title">edit</a>]</li>
-                  <li>[<a href="/delete/Ivan%20Webber/Make%20this%20work/The%20Title">delete</a>]</li>
-                </ul>
-            </li>
-          
-            <li class=" task">
-                <h3>Not The Title</h3>
-                <p>Due on Not Today</p>
-                <p>Not The details...</p>
-                <ul class="options">
-                  <li>[<a href="/mark completed/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">mark completed</a>]</li>
-                  <li>[<a href="/edit/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">edit</a>]</li>
-                  <li>[<a href="/delete/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">delete</a>]</li>
-                </ul>
-            </li>
-          
 
-          <form action="/add/Ivan%20Webber/Make%20this%20work" method="POST">
-          <li class="task">
-            <div><input maxLength=256 size=70 name=title value="" title="Task Title"></div>
-            <div><input type="date" name="due date" title="Due Date"></div>
-            <div><textarea name="details" rows="20" cols="20"></textarea></div>
-            <div><input type="submit" value="Save"></div>
-          </li>
-          </form>
-      </ul>
+
+<head>
+  <title>Tasks</title>
+  <link href="tasks.css" type="text/css" rel="stylesheet" />
+</head>
+
+<body>
+  <h1 id="title">View Tasks</h1>
+  
+  <div id="user">Ivan Webber</div>
+  
+  <div class="list">
+    <h2>Make this work</h2>
+    <ul>
+      
+      <li class="finished task">
+        <h3>The Title</h3>
+        <hr>
+        <p>Was due A DueDate</p>
+        <hr>
+        <p>The details...</p>
+        <hr>
+        <ul class="options">
+          <li>[<a href="/mark complete/Ivan%20Webber/Make%20this%20work/The%20Title">mark completed</a></li>-
+          <li><a href="/edit/Ivan%20Webber/Make%20this%20work/The%20Title">edit</a></li>-
+          <li><a href="/delete/Ivan%20Webber/Make%20this%20work/The%20Title">delete</a>]</li>
+        </ul>
+      </li>
+      
+      <li class=" task">
+        <h3>Not The Title</h3>
+        <hr>
+        <p>Due on Not Today</p>
+        <hr>
+        <p>Not The details...</p>
+        <hr>
+        <ul class="options">
+          <li>[<a href="/mark complete/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">mark completed</a></li>-
+          <!--<li><a href="/edit/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">edit</a></li>-->
+          <li><a href="/delete/Ivan%20Webber/Make%20this%20work/Not%20The%20Title">delete</a>]</li>
+        </ul>
+      </li>
+      
+
+      <form action="/add/Ivan%20Webber/Make%20this%20work" method="POST">
+        <li class="add task">
+          <div><input type=text maxLength=128 size=70 name=title placeholder="New Task" title="Task Title"></div>
+          <div><input type=date name="due date" title="Due Date"></div>
+          <div><textarea name=details rows="10"></textarea></div>
+          <div><input type=submit value="Add Task"></div>
+        </li>
+      </form>
+      <div class="listActions">
+        <a href="/delete/Ivan%20Webber/Make%20this%20work">delete list</a>
+      </div>
+    </ul>
+  </div>
+  
+  <form id="addList" action="/add/Ivan%20Webber/" method="POST">
+    <div><input type=text maxLength=128 size=70 name=title placeholder="New List" title="Task List"></div>
+    <div><input type=submit value="Add List"></div>
+  </form>
+
+</body>
+
+</html>    </div>
     
   </body>
 </html>
