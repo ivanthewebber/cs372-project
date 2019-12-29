@@ -59,29 +59,31 @@ import (
 	date, and etc.).
 */
 
-// User is a named owner of lists
-type User struct {
-	gorm.Model
-	FirstName string `gorm:"primary_key"`
-	LastName  string `gorm:"primary_key"`
-}
+type (
+	// User is a named owner of lists
+	User struct {
+		gorm.Model
+		FirstName string `gorm:"primary_key"`
+		LastName  string `gorm:"primary_key"`
+	}
 
-// Task is a to-do item
-type Task struct {
-	gorm.Model
-	Title      string `gorm:"primary_key"`
-	Details    string
-	DueDate    string
-	Completed  bool
-	TaskListID uint
-}
+	// Task is a to-do item
+	Task struct {
+		gorm.Model
+		Title      string `gorm:"primary_key"`
+		Details    string
+		DueDate    string
+		Completed  bool
+		TaskListID uint
+	}
 
-// TaskList is named set of tasks
-type TaskList struct {
-	gorm.Model
-	Title  string `gorm:"primary_key"`
-	UserID uint
-}
+	// TaskList is named set of tasks
+	TaskList struct {
+		gorm.Model
+		Title  string `gorm:"primary_key"`
+		UserID uint
+	}
+)
 
 // MustConnect connects to my local SampleDB
 func MustConnect() *gorm.DB {
