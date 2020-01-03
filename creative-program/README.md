@@ -53,14 +53,14 @@ The html package provides many methods for serving content, but none of these me
 
 | endpoint                                     | purpose                                 |
 | -------------------------------------        | --------------------------------        |
-| /welcome                                    | user's first point of contact           |
-| /login                                      | finds or lists user in DB               |
-| /view/firstname lastname                    | display's user's to-do lists            |
-| /add/firstname lastname                     | request to add a list                   |
-| /delete/firstname lastname                  | request to delete a list                |
-| /add/firstname lastname/list                | request to add task to list             |
-| /delete/firstname lastname/list             | request to delete task from list        |
-| /mark/firstname lastname/list/task | toggle's the .Completed field of a task |
+| /welcome                                     | user's first point of contact           |
+| /login                                       | finds or lists user in DB               |
+| /view/firstname lastname                     | display's user's to-do lists            |
+| /add/firstname lastname                      | request to add a list                   |
+| /delete/firstname lastname                   | request to delete a list                |
+| /add/firstname lastname/list                 | request to add task to list             |
+| /delete/firstname lastname/list              | request to delete task from list        |
+| /mark/firstname lastname/list/task           | toggle's the .Completed field of a task |
 NOTE: the server will be live at localhost:8080
 
 ## RegEx

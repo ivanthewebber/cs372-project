@@ -90,16 +90,10 @@ The designers of Go did a lot of work to clean up the C-family syntax to ensure 
 Go handles exceptions in three steps: defer, panic, recover. First, the defer keyword defers the execution of a function until the end of a function. This is simmilar to a finally block, and is useful for keeping file opening and closing together.
 ```Go
 func CopyFile(dstName, srcName string) (written int64, err error) {
-    src, err := os.Open(srcName)
-    if err != nil {
-        return
-    }
+    src, _ := os.Open(srcName)
     defer src.Close() // now you don't have to worry about forgetting!
 
-    dst, err := os.Create(dstName)
-    if err != nil {
-        return
-    }
+    dst, _ := os.Create(dstName)
     defer dst.Close()
 
     return io.Copy(dst, src)
