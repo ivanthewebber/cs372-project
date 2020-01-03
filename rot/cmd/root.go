@@ -50,7 +50,7 @@ ROT13 is used in online forums as a means of hiding spoilers, punchlines, puzzle
 			amount = -amount
 		}
 
-		io.Copy(os.Stdout, rot13.NewReader(strings.NewReader(args[0]), amount))
+		io.Copy(os.Stdout, rot13.NewReader(strings.NewReader(strings.Join(args, " ")), amount))
 	},
 }
 
